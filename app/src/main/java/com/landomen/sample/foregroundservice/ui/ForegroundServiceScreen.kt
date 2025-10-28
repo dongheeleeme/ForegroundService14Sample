@@ -1,4 +1,4 @@
-package com.landomen.sample.foregroundservice14.ui
+package com.landomen.sample.foregroundservice.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
@@ -19,81 +20,67 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.landomen.sample.foregroundservice14.R
-import com.landomen.sample.foregroundservice14.ui.theme.ForegroundService14Theme
+import com.landomen.sample.foregroundservice.R
+import com.landomen.sample.foregroundservice.ui.theme.ForegroundServiceTheme
 
 @Composable
-internal fun ForegroundServiceSampleScreen(
+internal fun ForegroundServiceScreen(
     serviceRunning: Boolean,
     currentLocation: String?,
-    onClick: () -> Unit,
+    onStartForegroundServiceClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    ForegroundService14Theme {
+    ForegroundServiceTheme {
         Surface(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize().systemBarsPadding(),
             color = MaterialTheme.colorScheme.background
         ) {
-            ForegroundServiceSampleScreenContent(
-                serviceRunning = serviceRunning,
-                currentLocation = currentLocation,
-                onClick = onClick,
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Top,
                 modifier = modifier
-            )
-        }
-    }
-}
-
-@Composable
-private fun ForegroundServiceSampleScreenContent(
-    serviceRunning: Boolean,
-    currentLocation: String?,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Top,
-        modifier = modifier
-            .fillMaxSize()
-            .padding(32.dp)
-    ) {
-        Text(
-            text = stringResource(id = R.string.foreground_service_sample_description),
-            textAlign = TextAlign.Center
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
-        ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
+                    .fillMaxSize()
+                    .padding(32.dp)
             ) {
-                ServiceStatusContent(
-                    serviceRunning = serviceRunning,
-                    onClick = onClick
+                Text(
+                    text = stringResource(id = R.string.foreground_service_sample_description),
+                    textAlign = TextAlign.Center
                 )
-            }
 
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-            ) {
-                LocationUpdate(visible = serviceRunning, location = currentLocation)
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                    ) {
+                        ServiceStatusContent(
+                            serviceRunning = serviceRunning,
+                            onClick = onStartForegroundServiceClick
+                        )
+                    }
+
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                    ) {
+                        LocationUpdate(visible = serviceRunning, location = currentLocation)
+                    }
+                }
             }
         }
     }
@@ -172,4 +159,14 @@ private fun LocationUpdate(
                 ?: stringResource(id = R.string.foreground_service_sample_last_location_fetching)
         )
     }
+}
+
+@Preview
+@Composable
+private fun ForegroundServiceScreenPreview() {
+    ForegroundServiceScreen(
+        serviceRunning = false,
+        currentLocation = "37.7901088, -122.3905696",
+        onStartForegroundServiceClick = {}
+    )
 }

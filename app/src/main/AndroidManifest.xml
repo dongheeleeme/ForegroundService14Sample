@@ -7,6 +7,7 @@
     <!--  Request the specific foreground service permission for each declared type  -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
 
+
     <!--  Request notification permission to be able to show the foreground service notification  -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
@@ -22,12 +23,12 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.ForegroundService14"
+        android:theme="@style/Theme.ForegroundService"
         tools:targetApi="31">
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:theme="@style/Theme.ForegroundService14">
+            android:theme="@style/Theme.ForegroundService">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -36,9 +37,14 @@
 
         <!--  Declare the foreground service type  -->
         <service
-            android:name=".service.ExampleLocationForegroundService"
+            android:name=".service.ExampleForegroundService"
             android:exported="false"
             android:foregroundServiceType="location" />
-    </application>
 
+        <!-- WorkManager foreground service -->
+        <service
+            android:name="androidx.work.impl.foreground.SystemForegroundService"
+            android:foregroundServiceType="location"
+            tools:node="merge" />
+    </application>
 </manifest>

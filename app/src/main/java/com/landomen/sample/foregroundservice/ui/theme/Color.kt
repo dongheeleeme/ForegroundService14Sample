@@ -1,4 +1,4 @@
-package com.landomen.sample.foregroundservice14.ui.theme
+package com.landomen.sample.foregroundservice.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

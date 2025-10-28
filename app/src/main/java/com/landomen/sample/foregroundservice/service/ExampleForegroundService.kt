@@ -1,5 +1,8 @@
-package com.landomen.sample.foregroundservice14.service
+package com.landomen.sample.foregroundservice.service
 
+import android.Manifest.permission.ACCESS_COARSE_LOCATION
+import android.Manifest.permission.ACCESS_FINE_LOCATION
+import android.annotation.SuppressLint
 import android.app.Service
 import android.content.Intent
 import android.content.pm.ServiceInfo
@@ -11,12 +14,13 @@ import android.os.Looper
 import android.util.Log
 import android.widget.Toast
 import androidx.core.app.ServiceCompat
+import androidx.core.content.PermissionChecker
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
-import com.landomen.sample.foregroundservice14.notification.NotificationsHelper
+import com.landomen.sample.foregroundservice.notification.NotificationsHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -34,7 +38,7 @@ import kotlin.time.Duration.Companion.seconds
 /**
  * Simple foreground service that shows a notification to the user and provides location updates.
  */
-class ExampleLocationForegroundService : Service() {
+class ExampleForegroundService : Service() {
     private val binder = LocalBinder()
 
     private val coroutineScope = CoroutineScope(Job())
@@ -46,7 +50,7 @@ class ExampleLocationForegroundService : Service() {
     var locationFlow: StateFlow<Location?> = _locationFlow
 
     inner class LocalBinder : Binder() {
-        fun getService(): ExampleLocationForegroundService = this@ExampleLocationForegroundService
+        fun getService(): ExampleForegroundService = this@ExampleForegroundService
     }
 
     override fun onBind(intent: Intent?): IBinder {
@@ -57,8 +61,20 @@ class ExampleLocationForegroundService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.d(TAG, "onStartCommand")
 
-        startAsForegroundService()
-        startLocationUpdates()
+        val fineLocationPermission =
+            PermissionChecker.checkSelfPermission(this, ACCESS_FINE_LOCATION)
+        val coarseLocationPermission =
+            PermissionChecker.checkSelfPermission(this, ACCESS_COARSE_LOCATION)
+        if (fineLocationPermission != PermissionChecker.PERMISSION_GRANTED &&
+            coarseLocationPermission != PermissionChecker.PERMISSION_GRANTED
+        ) {
+            // stop the service if we don't have the necessary permissions
+            Log.d(TAG, "Required permissions have not been granted! Stopping service.")
+            stopSelf()
+        } else {
+            startAsForegroundService()
+            startLocationUpdates()
+        }
 
         return super.onStartCommand(intent, flags, startId)
     }
@@ -90,15 +106,17 @@ class ExampleLocationForegroundService : Service() {
      * This needs to be called within 10 seconds of starting the service or the system will throw an exception.
      */
     private fun startAsForegroundService() {
-        // create the notification channel
+        // create the notification channel and notification
         NotificationsHelper.createNotificationChannel(this)
+        val notification = NotificationsHelper.buildNotification(this)
 
         // promote service to foreground service
         ServiceCompat.startForeground(
-            this,
-            1,
-            NotificationsHelper.buildNotification(this),
+            this, // service
+            1, // notification ID
+            notification, // actual notification to display
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                // mandatory FGS type
                 ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION
             } else {
                 0
@@ -132,6 +150,7 @@ class ExampleLocationForegroundService : Service() {
     /**
      * Starts the location updates using the FusedLocationProviderClient.
      */
+    @SuppressLint("MissingPermission")
     private fun startLocationUpdates() {
         fusedLocationClient.requestLocationUpdates(
             LocationRequest.Builder(
@@ -150,7 +169,7 @@ class ExampleLocationForegroundService : Service() {
                 .collectLatest {
                     withContext(Dispatchers.Main) {
                         Toast.makeText(
-                            this@ExampleLocationForegroundService,
+                            this@ExampleForegroundService,
                             "Foreground Service still running!",
                             Toast.LENGTH_SHORT
                         ).show()
